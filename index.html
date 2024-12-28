@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Tools</title>
+    <style>
+        /* Base Styling */
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            height: 100vh;
+            width: 100vw;
+            margin: 0 auto;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Container & Box Styling */
+        .container {
+            height: 100vh;
+            background: linear-gradient(to top, #56ccf2, #2f80ed);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 0 auto;
+            gap: 10vw;
+        }
+
+
+
+
+
+        .background-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        #lineCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+
+
+
+        /* background */
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            /* background-color: #ffffff; */
+        }
+
+        .background::before,
+        .background::after {
+            content: '';
+            position: absolute;
+
+            border-radius: 50%;
+            opacity: 0.5;
+        }
+
+        .background::before {
+            box-shadow: inset 10px 10px 50px rgba(0, 157, 224, 0.826);
+
+            background-color: #befdfdd3;
+            width: 200px;
+            height: 200px;
+            bottom: 25%;
+            /* top: -25%; */
+            left: 20%;
+            transform: translate(-50%, -50%);
+        }
+
+        .background::after {
+            box-shadow: inset 10px 10px 50px rgb(153, 158, 247);
+
+            background-color: #bbd0f5;
+            width: 200px;
+            height: 300px;
+            bottom: 0%;
+            right: 50%;
+        }
+
+
+
+        .background2::before,
+        .background2::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.7;
+        }
+
+        .background2::before {
+            box-shadow: inset 10px 10px 50px rgb(247, 153, 153);
+            background-color: #ddf9c2;
+            width: 200px;
+            height: 200px;
+            top: 60%;
+            left: 55%;
+            transform: translate(-50%, -50%);
+        }
+
+        .background2::after {
+            box-shadow: inset 10px 10px 50px rgba(33, 33, 185, 0.742);
+            background-color: #eed5ff;
+            width: 280px;
+            height: 2500px;
+            bottom: 55%;
+            right: 5%;
+        }
+
+
+
+
+
+
+
+        .box {
+            background: rgba(255, 255, 255, 0.164);
+            backdrop-filter: blur(10px) saturate(150%);
+            box-shadow: inset 0 1px 5px rgba(255, 255, 255, 0.648),
+                0 0 10px 8px rgba(0, 0, 0, 0.116);
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            padding: 30px;
+            width: 300px;
+            min-height: 150px;
+            text-align: center;
+            transition: transform 0.7s ease, background 0.5s ease, box-shadow 0.3s ease;
+        }
+
+        .box:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.8),
+                0 6px 12px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .box h1 {
+            font-family: 'Arial', sans-serif;
+            font-size: 24px;
+            font-weight: bold;
+            color: rgb(255, 255, 255);
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        /* Input and Notification Styling */
+        input[type="file"] {
+            display: none;
+        }
+
+        input[type="file"]:hover {
+            background-color: #0056b3;
+            transform: translateY(-3px);
+        }
+
+        label {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            /* background: rgba(255, 255, 255, 0.3); */
+            /* Glassy background */
+            background: rgba(0, 123, 255, 0.466);
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            font-size: 16px;
+            /* font-weight: bold; */
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+
+        }
+
+        label:hover {
+            /* background: rgba(255, 255, 255, 0.5); */
+            background: rgba(0, 123, 255, 0.726);
+            /* Slightly more opaque on hover */
+            transform: scale(1.05);
+            /* Slight scaling effect */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.511);
+            /* Soft shadow on hover */
+        }
+
+        label:focus {
+            outline: none;
+            /* Remove default focus outline */
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
+            /* Custom focus outline */
+        }
+
+
+        #generate-button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            /* background: rgba(255, 255, 255, 0.3); */
+            /* Glassy background */
+            background: rgba(22, 148, 51, 0.626);
+            /* Light green background */
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            font-size: 16px;
+            /* font-weight: bold; */
+            border-radius: 8px;
+            border: 2px solid rgba(40, 167, 70, 0.678);
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #generate-button:hover {
+            background: rgba(20, 153, 51, 0.895);
+            border: 2px solid rgba(40, 167, 69, 0.8);
+            /* Darker green border on hover */
+            transform: scale(1.1);
+            /* Slightly larger scale effect */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            /* More pronounced shadow */
+
+        }
+
+        #generate-button:focus {
+            background: rgba(40, 167, 69, 0.3);
+            /* Light green background */
+            border: 2px solid rgba(40, 167, 69, 0.5);
+            /* Green border */
+        }
+
+        .notification {
+            display: none;
+            margin-top: 20px;
+            padding: 10px 20px;
+            color: white;
+            background: #4caf4fa9;
+            /* Semi-transparent background */
+            border: 1px solid #4CAF50;
+
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            /* opacity: 0; */
+            /* Initially hidden */
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            /* Smooth transition */
+        }
+
+        .timer {
+            margin-top: 20px;
+            color: #007bff;
+            font-size: 14px;
+        }
+
+        /* Footer Styling */
+        .footer {
+
+            color: #fff;
+            padding: 15px 0 0 0;
+            text-align: center;
+            font-size: 14px;
+            position: fixed;
+            bottom: 0px;
+            width: 100%;
+        }
+
+        #myname {
+            color: #2c303c96;
+            font-weight: 700;
+            font-size: 25px;
+        }
+
+
+        .background-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="background"></div>
+        <div class="background2"></div>
+        <div class="background-line"></div>
+        
+
+        <!-- Crop PDF Box -->
+        <div class="box">
+            <div class="glossy-shine"></div>
+            <h1>Crop Flipkart Labels</h1>
+            <input type="file" id="crop-file-input" accept=".pdf">
+            <label for="crop-file-input">Upload PDF</label>
+            <div id="crop-notification" class="notification">Your cropped PDF is downloaded...</div>
+            <div id="crop-timer" class="timer"></div>
+        </div>
+
+        <!-- SKU Report Box -->
+        <div class="box">
+            <div class="glossy-shine"></div>
+            <h1>Generate Order List</h1>
+            <input type="file" id="csv-file-input" accept=".csv" multiple>
+            <label for="csv-file-input">Upload order.css</label>
+            <div id="file-list"></div>
+            <button id="generate-button" disabled>Generate</button>
+            <div id="csv-notification" class="notification">Your SKU report PDF is downloaded...</div>
+            <!-- <div id="csv-timer" class="timer"></div> -->
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/pdf-lib@1.17.1"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+
+    <script>
+
+        function createRandomShapes(numLines, numSquares, numRectangles, numTriangles, numCircles) {
+            const container = document.querySelector('.background-line'); // The background div
+
+            // Function to generate random color with low opacity
+            function getRandomColorWithOpacity() {
+                const r = Math.floor(Math.random() * 256);
+                const g = Math.floor(Math.random() * 256);
+                const b = Math.floor(Math.random() * 256);
+                return `rgba(${r}, ${g}, ${b}, 0.7)`; // Low opacity
+            }
+
+            // Create random lines
+            for (let i = 0; i < numLines; i++) {
+                const line = document.createElement('div');
+                const angle = Math.random() * 360;
+                const length = Math.random() * 200 + 50;
+                const x = Math.random() * window.innerWidth;
+                const y = Math.random() * window.innerHeight;
+
+                line.style.position = 'absolute';
+                line.style.width = `${length}px`;
+                line.style.height = '2px';
+                line.style.backgroundColor = getRandomColorWithOpacity();
+                line.style.top = `${y}px`;
+                line.style.left = `${x}px`;
+                line.style.transform = `rotate(${angle}deg)`;
+
+                container.appendChild(line);
+            }
+
+            // Create random squares
+            for (let i = 0; i < numSquares; i++) {
+                const square = document.createElement('div');
+                const size = Math.random() * 100 + 20;
+                const x = Math.random() * window.innerWidth;
+                const y = Math.random() * window.innerHeight;
+
+                square.style.position = 'absolute';
+                square.style.width = `${size}px`;
+                square.style.height = `${size}px`;
+                square.style.backgroundColor = getRandomColorWithOpacity();
+                square.style.top = `${y}px`;
+                square.style.left = `${x}px`;
+
+                container.appendChild(square);
+            }
+
+            // Create random rectangles
+            for (let i = 0; i < numRectangles; i++) {
+                const rectangle = document.createElement('div');
+                const width = Math.random() * 150 + 50;
+                const height = Math.random() * 100 + 20;
+                const x = Math.random() * window.innerWidth;
+                const y = Math.random() * window.innerHeight;
+
+                rectangle.style.position = 'absolute';
+                rectangle.style.width = `${width}px`;
+                rectangle.style.height = `${height}px`;
+                rectangle.style.backgroundColor = getRandomColorWithOpacity();
+                rectangle.style.top = `${y}px`;
+                rectangle.style.left = `${x}px`;
+
+                container.appendChild(rectangle);
+            }
+
+            // Create random triangles
+            for (let i = 0; i < numTriangles; i++) {
+                const triangle = document.createElement('div');
+                const size = Math.random() * 100 + 50;
+                const x = Math.random() * window.innerWidth;
+                const y = Math.random() * window.innerHeight;
+
+                triangle.style.position = 'absolute';
+                triangle.style.width = '0';
+                triangle.style.height = '0';
+                triangle.style.borderLeft = `${size / 2}px solid transparent`;
+                triangle.style.borderRight = `${size / 2}px solid transparent`;
+                triangle.style.borderBottom = `${size}px solid ${getRandomColorWithOpacity()}`;
+                triangle.style.top = `${y}px`;
+                triangle.style.left = `${x}px`;
+
+                container.appendChild(triangle);
+            }
+
+            // Create random circles
+            for (let i = 0; i < numCircles; i++) {
+                const circle = document.createElement('div');
+                const size = Math.random() * 100 + 20;
+                const x = Math.random() * window.innerWidth;
+                const y = Math.random() * window.innerHeight;
+
+                circle.style.position = 'absolute';
+                circle.style.width = `${size}px`;
+                circle.style.height = `${size}px`;
+                circle.style.backgroundColor = getRandomColorWithOpacity();
+                circle.style.borderRadius = '50%';
+                circle.style.top = `${y}px`;
+                circle.style.left = `${x}px`;
+
+                container.appendChild(circle);
+            }
+        }
+
+        // Call the function with the desired number of each shape
+        createRandomShapes(10, 10, 10, 5, 5); // Example: 10 lines, 10 squares, 10 rectangles, 5 triangles, 5 circles
+
+
+
+
+
+
+        let uploadedFiles = [];
+
+        // Crop PDF Functionality
+        document.getElementById('crop-file-input').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                const reader = new FileReader();
+                reader.onload = async function (e) {
+                    const pdfDoc = await PDFLib.PDFDocument.load(e.target.result);
+                    const pages = pdfDoc.getPages();
+                    const cropWidth = 225;
+                    const cropHeight = 365;
+                    pages.forEach((page) => {
+                        const { width, height } = page.getSize();
+                        const left = 185;
+                        const bottom = height - cropHeight - 20;
+                        page.setCropBox(left, bottom, cropWidth, cropHeight);
+                    });
+                    const croppedPdfBytes = await pdfDoc.save();
+                    const blob = new Blob([croppedPdfBytes], { type: 'application/pdf' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'cropped-File.pdf';
+                    a.click();
+                    document.getElementById('crop-notification').style.display = 'block';
+                };
+                reader.readAsArrayBuffer(file);
+            } else {
+                alert('Please upload a valid PDF file.');
+            }
+        });
+
+        // SKU Report Functionality
+        document.getElementById('csv-file-input').addEventListener('change', function (event) {
+            const files = event.target.files;
+            const fileListElement = document.getElementById('file-list');
+            Array.from(files).forEach((file) => {
+                if (file.type === 'text/csv') {
+                    uploadedFiles.push(file);
+                    const listItem = document.createElement('p');
+                    listItem.textContent = `Orderlist(${uploadedFiles.length}) - ${file.name}`;
+                    fileListElement.appendChild(listItem);
+                }
+            });
+            document.getElementById('generate-button').disabled = uploadedFiles.length === 0;
+        });
+
+        document.getElementById('generate-button').addEventListener('click', function () {
+            const startTime = performance.now();
+            const skuCounts = {};
+            let combos = 0;
+
+            const readCSVFile = (file) => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        resolve(e.target.result);
+                    };
+                    reader.readAsText(file);
+                });
+            };
+
+            // Process all uploaded files and merge SKU data
+            function sanitizeCSV(content) {
+                let inQuotes = false;
+                let sanitizedContent = '';
+
+                for (let i = 0; i < content.length; i++) {
+                    const char = content[i];
+
+                    // Toggle inQuotes state if encountering a double quote
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    }
+
+                    // Replace new line characters inside quotes with a space
+                    if (char === '\n' && inQuotes) {
+                        sanitizedContent += ' ';
+                    } else {
+                        sanitizedContent += char;
+                    }
+                }
+
+                return sanitizedContent;
+            }
+
+            function validateRows(csvData, expectedColumnCount) {
+                const rows = csvData.split('\n');
+                return rows.filter(row => row.split(',').length >= expectedColumnCount);
+            }
+
+            function parseCSVRow(row) {
+                const columns = row.split(',');
+
+                if (columns.length < 35) {
+                    console.error(`Skipping malformed row: ${row}`);
+                    return null; // Skip malformed rows
+                }
+
+                const sku = columns[9].trim(); // Assuming SKU is in column 9
+                const quantity = parseInt(columns[19].trim(), 10); // Assuming quantity is in column 19
+
+                return { sku, quantity };
+            }
+
+            function processCSVData(csvDataArray) {
+                csvDataArray.forEach((csvData) => {
+                    const sanitizedData = sanitizeCSV(csvData);
+                    const validRows = validateRows(sanitizedData, 35); // Ensuring 35 columns
+
+                    validRows.forEach(row => {
+                        const { sku, quantity } = parseCSVRow(row) || {}; // Parse the row, skip if malformed
+
+                        if (sku) {
+                            skuCounts[sku] = (skuCounts[sku] || 0) + 1;
+                        }
+                        if (!isNaN(quantity) && quantity > 1) {
+                            combos += 1; // Count combos where quantity > 1
+                        }
+                    });
+                });
+
+                generatePDF(skuCounts, combos, startTime);
+            }
+
+            Promise.all(uploadedFiles.map(file => readCSVFile(file)))
+                .then((csvDataArray) => {
+                    processCSVData(csvDataArray);
+                })
+                .catch(error => {
+                    console.error('Error processing CSV files:', error);
+                });
+
+        });
+
+        async function generatePDF(skuCounts, combos, startTime) {
+            const pdfDoc = await PDFLib.PDFDocument.create();
+            const page = pdfDoc.addPage([600, 800]);
+            const { width, height } = page.getSize();
+            let y = height - 50;
+            const fontSize = 12;
+
+            page.drawText('SKU Report', { x: 50, y: y, size: 16 });
+            y -= 40;
+            page.drawText('SKU ID', { x: 50, y: y, size: fontSize });
+            page.drawText('Count', { x: 300, y: y, size: fontSize });
+            y -= 20;
+
+            for (const [sku, count] of Object.entries(skuCounts)) {
+                page.drawText(sku, { x: 50, y: y, size: fontSize });
+                page.drawText(String(count), { x: 300, y: y, size: fontSize });
+                y -= 20;
+            }
+
+            y -= 40;
+            page.drawText(`Number of Combos: ${combos}`, { x: 50, y: y, size: 14 });
+
+            const pdfBytes = await pdfDoc.save();
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'SKU_Report.pdf';
+            a.click();
+
+            const endTime = performance.now();
+            const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
+            document.getElementById('csv-timer').textContent = `Time taken: ${timeTaken} seconds`;
+            document.getElementById('csv-notification').style.display = 'block';
+        }
+    </script>
+
+</body>
+
+<footer class="footer">
+    <p>Developed by <span id="myname">Sarik Khan</span></p>
+</footer>
+
+</html>
